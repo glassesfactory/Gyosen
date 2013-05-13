@@ -1,4 +1,4 @@
 Gyosen
 ==========
 
-Framework for Framework.
+ソイヤソイヤソイヤソイヤ！
