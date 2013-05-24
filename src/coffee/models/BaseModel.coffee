@@ -94,6 +94,25 @@ do(Gyosen)->
       @queriedCollection = results
       return @
 
+    @order:(orderKey)->
+      return @
+
+    ###
+    #todo
+    # limit を fetch の引数にするか否か。
+    # あと offset....
+    ###
+    @fetch:()->
+      results = []
+      if @queried
+        results = @queriedCollection
+        @queriedCollection = []
+        @queried = false
+      else
+        results = @collection
+      return results
+
+
     ###
     ====================
       for instance

@@ -85,7 +85,7 @@ IyoboyaModel.on(Gyosen.Event.COMPLETE, loaded).load()
 checkSize =(model)->
   return model.size > 120
 
-dekkaino = IyoboyaModel.filter(checkSize)
+dekkaino = IyoboyaModel.filter(checkSize).fetch()
 #for model in dekkaino
 #  Gyosen.log model.size
 #
