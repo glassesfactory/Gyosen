@@ -8,6 +8,9 @@ do(window)->
     "INFO":"info"
     "ERROR": "error"
     "WARNING": "warning"
+    "setting":
+      "SUCCESS_STATUS_CODE":[200, 304]
+      "ERROR_STATUS_CODE": [403, 404, 500, 503, 505]
   }
 
   #いるかなー
