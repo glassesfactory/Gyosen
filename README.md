@@ -3,6 +3,10 @@ Gyosen
 
 ソイヤソイヤソイヤソイヤ！
 
+ソイヤ…
+[Kazitori.js](https://github.com/glassesfactory/kazitori.js)
+[Hunanori.js](https://github.com/glassesfactory/Hunanori.js)
+
 ソイヤ！
 -----------------------
 
