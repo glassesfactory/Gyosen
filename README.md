@@ -1,27 +1,27 @@
 Gyosen
 ==========
 
-三三＼　　　　　／三
-三三三＼　　　／三三
-￣￣￣￣￣￣￣￣￣￣
-　Nice boat.　　~~~
-　　　　　　　　~~~~
-　　 _ｨ†N==ｭ_　 ~~~
-　　/互巫乢/"/L　~~
-　　Lｪｪｪｪｪｲ"/L｜彡~
-　 ｢ﾛﾛﾛﾛﾛﾛﾛｲL/｜彡
-　∥￣￣￣７/ /彡
-　∥＝＝＝／ /彡
-`ミ＼j＿／ ／彡
-　ミヽ＿_／彡
-　　ミ　彡
+三三＼　　　　　／三  
+三三三＼　　　／三三  
+￣￣￣￣￣￣￣￣￣￣  
+　Nice boat.　　~~~  
+　　　　　　　　~~~~  
+　　 _ｨ†N==ｭ_　 ~~~  
+　　/互巫乢/"/L　~~  
+　　Lｪｪｪｪｪｲ"/L｜彡~  
+　 ｢ﾛﾛﾛﾛﾛﾛﾛｲL/｜彡  
+　∥￣￣￣７/ /彡  
+　∥＝＝＝／ /彡  
+`ミ＼j＿／ ／彡  
+　ミヽ＿_／彡  
+　　ミ　彡  
 
 
 ソイヤソイヤソイヤソイヤ！
 
-ソイヤ…
-[Kazitori.js](https://github.com/glassesfactory/kazitori.js)
-[Hunanori.js](https://github.com/glassesfactory/Hunanori.js)
+ソイヤ…  
+[Kazitori.js](https://github.com/glassesfactory/kazitori.js)  
+[Hunanori.js](https://github.com/glassesfactory/Hunanori.js)  
 
 ソイヤ！
 -----------------------
