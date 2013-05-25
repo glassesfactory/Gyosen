@@ -11,10 +11,12 @@ do(Gyosen)->
     @length:0
 
     @_isLoaded: false
-    @dataType: "json"
     @contentType: "application/json"
-    @_dispatcher: new EventDispatcher()
+    @responseType: "application/json"
+    @_dispatcher: new Gyosen.EventDispatcher()
     @isUnique: false
+    #む…
+    # @xhr: new Gyosen.XHR()
 
     #サーバーからデータを読み込む
     @load:(url, cb)=>
@@ -24,14 +26,10 @@ do(Gyosen)->
         @.loadCB = cb
       #data type の判定いるかなー
       #msgpack だった時とか
-      # jquery に依存してるじゃないですか…
-      $.ajax(
-        url: @.url
-        dataType: @.dataType
-        contentType: @.contentType
-        success: @._success
-        error: @._error
-      )
+      @xhr = new Gyosen.XHR()
+      @xhr.on Gyosen.Event.COMPLETE, @_success
+      @xhr.on Gyosen.IOErrorEvent.IO_ERROR, @_error
+      @xhr.receive(@.url)
       return @
     #プライベートにしたほうがいいねぇ
     @queried: false
@@ -55,21 +53,21 @@ do(Gyosen)->
       return model
 
     @on:(type, listener)=>
-      @._dispatcher.addEventListener(type, listener)
+      @._dispatcher.on(type, listener)
       return @
 
     @off:(type, listener)=>
-      @._dispatcher.removeEventListener(type, listener)
+      @._dispatcher.on(type, listener)
       return @
 
     @_success:(data)=>
       @._isLoaded = true
       @_appendToCollection(data)
-      @._dispatcher.dispatchEvent(new TECH.Event(TECH.Event.COMPLETE))
+      @._dispatcher.fire(new Gyosen.Event(Gyosen.Event.COMPLETE))
 
     @_error:(error)->
-      console.warn error
-      @._dispatcher.dispatchEvent(new TECH.IOErrorEvent(TECH.IOErrorEvent.IO_ERROR, "load failed"))
+      @warn(error)
+      @._dispatcher.fire(new Gyosen.IOErrorEvent(Gyosen.IOErrorEvent.IO_ERROR, "load failed"))
 
     @_appendToCollection:(data)=>
       for x in data
@@ -83,6 +81,14 @@ do(Gyosen)->
         @.loadCB.apply()
       return
 
+    ###
+      Gyosen.models.BaseModel.filter
+      -----------------------------------
+      **Static**
+      フィルタリングの条件を関数として渡し、
+      その結果のコレクションを生成する。
+      :params checkFunc: フィルタリングの条件となる関数
+    ###
     @filter:(checkFunc)->
       if not @queried
         @queriedCollection = @collection
@@ -102,6 +108,12 @@ do(Gyosen)->
     # limit を fetch の引数にするか否か。
     # あと offset....
     ###
+    ###
+      Gyosen.models.BaseModel.fetch
+      -----------------------------------
+      **Static**
+      クエリした結果を取得する。
+    ###
     @fetch:()->
       results = []
       if @queried
@@ -119,48 +131,83 @@ do(Gyosen)->
     ====================
     ###
 
-    id:null
+    id: null
 
     propNames:[]
 
+    #propMap:{}
+
+    ###
+      Gyosen.models.BaseModel
+      -----------------------------------
+      コンストラクタ
+      :params properties: モデルのプロパティを設定する。
+    ###
     constructor:(properties)->
       if properties?
-        @bindData(properties)
+        @bindProp(properties)
       return
 
-    bindData:(properties)=>
+    ###
+      Gyosen.models.BaseModel.bindProp
+      -----------------------------------
+      モデルの内容をサーバーに PUT メソッドで投げ更新する。
+      成功した場合は自身の値を投げた値で更新する。
+    ###
+    #TODO: DB 用のパラメーターとして設定しているものかどうか判断して追加する
+    bindProp:(properties)=>
       for prop of properties
         @.propNames.push prop
         @[prop] = properties[prop]
 
-    #データを保存する
+    ###
+      Gyosen.models.BaseModel.save
+      -----------------------------------
+      モデルの内容をサーバーに POST メソッドで投げ新規作成する。
+    ###
     save:(data)=>
       if not data
         data = @.toFormArray()
 
       cls = @constructor
       #todo 脱 jQuery
-      $.ajax({
-        url: cls.url
-        method: "POST"
-        data:data
-        success:(data)=>
-          @bindData(data)
-          #んー
-          cls.collection.unshift @
-          cls._dispatcher.dispatchEvent(new TECH.ModelEvent(TECH.ModelEvent.ADDED, @.id))
-        error: (error)->
-          cls._dispatcher.dispatchEvent(new TECH.IOErrorEvent(TECH.IOErrorEvent.IO_ERROR))
-        })
+      @xhr = new Gyosen.XHR()
+      @xhr.on Gyosen.Event.COMPLETE, @_savedHandler
+      @xhr.on Gyosen.IOErrorEvent.IO_ERROR, @_ioErrorHandler
+      @xhr.send(cls.url, data, {"method":"POST"})
       return
 
-    update:()->
-      @throwError(new Error("not implements"))
+    ###
+      Gyosen.models.BaseModel.update
+      -----------------------------------
+      モデルの内容をサーバーに PUT メソッドで投げ更新する。
+      成功した場合は自身の値を投げた値で更新する。
+    ###
+    update:(data)=>
+      cls = @constructor
+      if not data
+        data = @.toFormArray()
+
+      @xhr = new Gyosen.XHR()
+      @xhr.on Gyosen.Event.COMPLETE, @_updatedHandler
+      @xhr.on Gyosen.IOErrorEvent.IO_ERROR, @_ioErrorHandler
+      @xhr.send(Gyosen.urlFor(cls.url, @.id), data, {"method":"PUT"})
       return
 
-    destroy:()->
-      @throwError(new Error("not implements"))
-      return
+    ###
+      Gyosen.models.BaseModel.destroy
+      -----------------------------------
+      モデルをサーバーにDELETEメソッドで投げる
+      成功した場合はコレクションから削除される。
+    ###
+    destroy:()=>
+      cls = @constructor
+
+      @xhr = new Gyosen.XHR()
+      @xhr.on Gyosen.Event.COMPLETE, @_deletedHandler
+      @xhr.on Gyosen.IO_ERROR.IO_ERROR, @_ioErrorHandler
+      @xhr.receive(Gyosen.urlFor(cls, url, @.id), {"method":"DELETE"})
+      return @
 
     throwError:(err)->
       throw err
@@ -172,8 +219,12 @@ do(Gyosen)->
         param[name] = @[name]
       return param
 
-    #なまえ…
-    toFormArray:()=>
+    ###
+      モデルの各プロパティを $.serializeArray と同じ
+      {"name": "propName", "value": "propValue"}
+      形式にし、配列に格納して返す。
+    ###
+    toSerializeArray:()=>
       param = []
       for name in @propNames
         obj = {}
@@ -186,9 +237,12 @@ do(Gyosen)->
     toJSON:()=>
       return JSON.stringify(@toDict())
 
-    #モデルを msgpack にして返す
+    ###
+      モデルを msgpack にして返す
+      :require: [msgpack.js](https://github.com/msgpack/msgpack-javascript)
+    ###
     toMsgPack:()=>
-      if not msgpack and not window.msgpack
+      if not msgpack and "msgpack" in Gyosen.win
         throw new Error('msgpack.js not found....')
       return msgpack.pack(@toDict())
   Gyosen.BaseModel = BaseModel
